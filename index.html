@@ -2,151 +2,341 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nawigator Labiryntu v2</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; padding: 20px; }
-        .container { max-width: 600px; margin: auto; background: #1e1e1e; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        h2 { text-align: center; color: #4caf50; }
-        select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #333; background: #252525; color: white; font-size: 16px; }
-        button { background: #4caf50; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #45a049; }
-        #result { margin-top: 20px; }
-        .step-card { background: #2a2a2a; border-left: 5px solid #4caf50; padding: 15px; margin-bottom: 10px; border-radius: 4px; }
-        .portal-instruction { color: #ff9800; font-weight: bold; font-size: 1.1em; }
-        .target-name { color: #81c784; }
+        body { 
+            font-family: 'Segoe UI', 'Arial', sans-serif; 
+            background: #121212; 
+            color: #e0e0e0; 
+            padding: 20px; 
+            margin: 0;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: auto; 
+            background: #1e1e1e; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+            position: relative;
+        }
+        .language-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .language-selector span {
+            font-size: 14px;
+            color: #aaa;
+        }
+        .language-selector select {
+            background: #252525;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            min-width: 120px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+            padding-right: 35px;
+        }
+        .language-selector select:focus {
+            outline: none;
+            border-color: #4caf50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+        .language-selector select option {
+            background: #252525;
+            color: white;
+            padding: 10px;
+        }
+        h2 { 
+            text-align: center; 
+            color: #4caf50; 
+            margin-top: 0;
+            margin-bottom: 20px;
+            /* Usunięto padding-right: 140px; */
+            /* Zamiast tego dodajemy padding po prawej tylko jeśli potrzebny */
+            padding-right: 0;
+        }
+        label { 
+            display: block; 
+            margin-top: 15px; 
+            margin-bottom: 5px; 
+            font-weight: bold;
+        }
+        .sub-label {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        select, button { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border-radius: 6px; 
+            border: 1px solid #333; 
+            background: #252525; 
+            color: white; 
+            font-size: 16px; 
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+        }
+        button { 
+            background: #4caf50; 
+            border: none; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            margin-top: 20px;
+        }
+        button:hover { 
+            background: #45a049; 
+        }
+        #result { 
+            margin-top: 20px; 
+        }
+        .step-card { 
+            background: #2a2a2a; 
+            border-left: 5px solid #4caf50; 
+            padding: 15px; 
+            margin-bottom: 10px; 
+            border-radius: 4px; 
+        }
+        .portal-instruction { 
+            color: #ff9800; 
+            font-weight: bold; 
+            font-size: 1.1em; 
+        }
+        .target-name { 
+            color: #81c784; 
+        }
+        
+        /* Dodajemy kontener dla tytułu z marginesem po prawej */
+        .title-container {
+            position: relative;
+            margin-right: 140px; /* Miejsce dla selektora języków */
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Nawigator Labiryntu</h2>
+    <div class="language-selector">
+        <span>🌐</span>
+        <select id="languageSelect" onchange="changeLanguage(this.value)">
+            <option value="pl">🇵🇱 Polski</option>
+            <option value="en">🇬🇧 English</option>
+        </select>
+    </div>
     
-    <label>Gdzie jesteś teraz?</label><br>
-    <label>Mapa pozycji: 1 = Lewa Góra, 2 = Prawa Góra, 3 = Lewy Dół, 4 = Prawy Dół</label>
+    <!-- Dodajemy div kontener wokół tytułu -->
+    <div class="title-container">
+        <h2 id="title">Nawigator Labiryntu</h2>
+    </div>
+    
+    <label id="currentLocationLabel">Gdzie jesteś teraz?</label>
+    <div class="sub-label" id="positionMapLabel">Mapa pozycji: 1 = Lewa Góra, 2 = Prawa Góra, 3 = Lewy Dół, 4 = Prawy Dół</div>
     <select id="startNode"></select>
 
-    <label>Cel podróży:</label>
+    <label id="destinationLabel">Cel podróży:</label>
     <select id="endNode"></select>
 
-    <button onclick="findPath()">Wyznacz trasę</button>
+    <button onclick="findPath()" id="findPathBtn">Wyznacz trasę</button>
 
     <div id="result"></div>
 </div>
 
 <script>
-// Mapa pozycji: LG=Lewa Góra, PG=Prawa Góra, LD=Lewy Dół, PD=Prawy Dół
+// ==================== KONFIGURACJA TŁUMACZEŃ ====================
+const translations = {
+    pl: {
+        title: "Nawigator Labiryntu",
+        currentLocation: "Gdzie jesteś teraz?",
+        positionMap: "Strefy mapy: 1 = Lewa Góra, 2 = Prawa Góra, 3 = Lewy Dół, 4 = Prawy Dół",
+        destination: "Cel podróży:",
+        findPath: "Wyznacz trasę",
+        alreadyThere: "Jesteś już u celu!",
+        noPath: "Brak dostępnej drogi.",
+        yourRoute: "Twoja trasa:",
+        step: "KROK",
+        youAreAt: "Jesteś w",
+        choose: "Wybierz:",
+        willTakeYouTo: "Przeniesie Cię do:",
+        arrived: "Jesteś u celu! 🏁",
+        positions: {
+            "LG": "Lewy Górny portal",
+            "PG": "Prawy Górny portal",
+            "LD": "Lewy Dolny portal",
+            "PD": "Prawy Dolny portal"
+        }
+    },
+    en: {
+        title: "Maze Navigator",
+        currentLocation: "Where are you now?",
+        positionMap: "Map zone: 1 = Top Left, 2 = Top Right, 3 = Bottom Left, 4 = Bottom Right",
+        destination: "Destination:",
+        findPath: "Find Path",
+        alreadyThere: "You are already at the destination!",
+        noPath: "No available path found.",
+        yourRoute: "Your Route:",
+        step: "STEP",
+        youAreAt: "You are at",
+        choose: "Choose:",
+        willTakeYouTo: "Will take you to:",
+        arrived: "You've arrived! 🏁",
+        positions: {
+            "LG": "Top Left portal",
+            "PG": "Top Right portal",
+            "LD": "Bottom Left portal",
+            "PD": "Bottom Right portal"
+        }
+    }
+};
+
+// Struktura grafu pozostaje bez zmian
 const graph = {
-    // 1: Atlas A (AA)
     "Atlas A 1": { LG: "Atlas C 2", PG: "Orion 2", LD: "Eridani 4", PD: "Cygni 2" },
     "Atlas A 2": { LG: "Persei 3", PG: "Bootes 1", LD: "Cygni 4", PD: "Sirius 4" },
     "Atlas A 3": { LG: "Orion 3", PG: "Volantis 2", LD: "Maia 1", PD: "Alcyone 3" },
     "Atlas A 4": { LG: "Sirius 3", PG: "Volantis 2", LD: "Maia 3", PD: "Maia 3" },
-
-    // 2: Atlas B (AB)
+    
     "Atlas B 1": { LG: "Maia 2", PG: "Volantis 2", LD: "Atlas C 3", PD: "Helvetios 4" },
     "Atlas B 2": { LG: "Cygni 3", PG: "Helvetios 2", LD: "Aquila 2", PD: "Eridani 2" },
     "Atlas B 3": { LG: "Sirius 2", PG: "Sirius 1", LD: "Sirius 1", PD: "Auriga 1" },
     "Atlas B 4": { LG: "Persei 1", PG: "Alcyone 1", LD: "Orion 2", PD: "Cygni 1" },
 
-    // 3: Atlas C (AC)
     "Atlas C 1": { LG: "Atlas C 4", PG: "Auriga 1", LD: "Cygni 3", PD: "Helvetios 4" },
     "Atlas C 2": { LG: "Sadatoni 2", PG: "Atlas A 1", LD: "Persei 4", PD: "Orion 2" },
     "Atlas C 3": { LG: "Orion 3", PG: "Atlas B 1", LD: "Helvetios 1", PD: "Aquila 3" },
     "Atlas C 4": { LG: "Alcyone 3", PG: "Volantis 1", LD: "Atlas C 1", PD: "Alcyone 4" },
 
-    // 4: Cygni (CY)
     "Cygni 1": { LG: "Atlas B 4", PG: "Eridani 3", LD: "Aquila 3", PD: "Helvetios 4" },
     "Cygni 2": { LG: "Helvetios 2", PG: "Atlas A 1", LD: "Eridani 3", PD: "Volantis 2" },
     "Cygni 3": { LG: "Atlas B 2", PG: "Auriga 2", LD: "Atlas C 1", PD: "Aquila 4" },
     "Cygni 4": { LG: "Orion 2", PG: "Sadatoni 1", LD: "Bootes 2", PD: "Atlas A 2" },
 
-    // 5: Helvetios (HE)
     "Helvetios 1": { LG: "Atlas C 3", PG: "Sirius 3", LD: "Auriga 1", PD: "Orion 4" },
     "Helvetios 2": { LG: "Cygni 2", PG: "Sirius 4", LD: "Atlas B 2", PD: "Helvetios 4" },
     "Helvetios 3": { LG: "Orion 4", PG: "Eridani 3", LD: "Alcyone 3", PD: "Auriga 3" },
     "Helvetios 4": { LG: "Atlas C 1", PG: "Atlas B 1", LD: "Helvetios 2", PD: "Cygni 1" },
 
-    // 6: Eridani (ER)
     "Eridani 1": { LG: "Persei 2", PG: "Auriga 4", LD: "Bootes 4", PD: "Maia 1" },
     "Eridani 2": { LG: "Maia 3", PG: "Orion 1", LD: "Persei 1", PD: "Atlas B 2" },
     "Eridani 3": { LG: "Helvetios 3", PG: "Cygni 1", LD: "Cygni 2", PD: "Volantis 3" },
     "Eridani 4": { LG: "Atlas A 1", PG: "Auriga 2", LD: "Auriga 4", PD: "Aquila 1" },
 
-    // 7: Sirius (SI)
     "Sirius 1": { LG: "Bootes 3", PG: "Atlas B 3", LD: "Atlas B 3", PD: "Aquila 1" },
     "Sirius 2": { LG: "Atlas B 3", PG: "Bootes 3", LD: "Volantis 1", PD: "Persei 2" },
     "Sirius 3": { LG: "Helvetios 1", PG: "Atlas A 4", LD: "Bootes 1", PD: "Bootes 4" },
     "Sirius 4": { LG: "Helvetios 2", PG: "Atlas A 2", LD: "Alcyone 1", PD: "Sadatoni 3" },
 
-    // 8: Sadatoni (SA)
     "Sadatoni 1": { LG: "Volantis 3", PG: "Aquila 2", LD: "Alcyone 2", PD: "Cygni 4" },
     "Sadatoni 2": { LG: "Maia 3", PG: "Atlas C 2", LD: "Persei 3", PD: "Bootes 3" },
     "Sadatoni 3": { LG: "Bootes 4", PG: "Alcyone 2", LD: "Orion 2", PD: "Sirius 4" },
     "Sadatoni 4": { LG: "Volantis 4", PG: "Persei 4", LD: "Alcyone 1", PD: "Volantis 4" },
 
-    // 9: Persei (PE)
     "Persei 1": { LG: "Atlas B 4", PG: "Eridani 2", LD: "Aquila 2", PD: "Persei 2" },
     "Persei 2": { LG: "Sirius 2", PG: "Persei 1", LD: "Eridani 1", PD: "Bootes 2" },
     "Persei 3": { LG: "Aquila 4", PG: "Sadatoni 2", LD: "Atlas A 2", PD: "Maia 4" },
     "Persei 4": { LG: "Alcyone 4", PG: "Sadatoni 4", LD: "Aquila 3", PD: "Atlas C 2" },
 
-    // 10: Volantis (VO)
     "Volantis 1": { LG: "Sirius 2", PG: "Bootes 1", LD: "Atlas C 4", PD: "Alcyone 4" },
     "Volantis 2": { LG: "Atlas B 1", PG: "Atlas A 4", LD: "Atlas A 3", PD: "Cygni 2" },
     "Volantis 3": { LG: "Bootes 2", PG: "Sadatoni 1", LD: "Eridani 3", PD: "Bootes 3" },
     "Volantis 4": { LG: "Sadatoni 4", PG: "Bootes 1", LD: "Alcyone 2", PD: "Sadatoni 4" },
 
-    // 11: Alcyone (AL)
     "Alcyone 1": { LG: "Alcyone 4", PG: "Sadatoni 4", LD: "Sirius 4", PD: "Atlas B 4" },
     "Alcyone 2": { LG: "Aquila 4", PG: "Sadatoni 1", LD: "Volantis 4", PD: "Sadatoni 3" },
     "Alcyone 3": { LG: "Atlas C 4", PG: "Atlas A 1", LD: "Helvetios 3", PD: "Bootes 2" },
     "Alcyone 4": { LG: "Volantis 1", PG: "Alcyone 1", LD: "Atlas C 4", PD: "Persei 4" },
 
-    // 12: Auriga (AU)
     "Auriga 1": { LG: "Atlas B 3", PG: "Helvetios 1", LD: "Atlas C 1", PD: "Maia 4" },
     "Auriga 2": { LG: "Auriga 4", PG: "Eridani 4", LD: "Maia 4", PD: "Cygni 3" },
     "Auriga 3": { LG: "Helvetios 3", PG: "Aquila 1", LD: "Aquila 3", PD: "Orion 3" },
     "Auriga 4": { LG: "Eridani 1", PG: "Maia 1", LD: "Auriga 2", PD: "Eridani 4" },
 
-    // 13: Bootes (BO)
     "Bootes 1": { LG: "Volantis 4", PG: "Atlas A 2", LD: "Volantis 1", PD: "Sirius 3" },
     "Bootes 2": { LG: "Cygni 4", PG: "Alcyone 3", LD: "Persei 2", PD: "Volantis 3" },
     "Bootes 3": { LG: "Sirius 2", PG: "Sirius 1", LD: "Sadatoni 2", PD: "Volantis 3" },
     "Bootes 4": { LG: "Sadatoni 3", PG: "Sirius 3", LD: "Eridani 1", PD: "Maia 1" },
 
-    // 14: Aquila (AQ)
     "Aquila 1": { LG: "Orion 4", PG: "Auriga 3", LD: "Eridani 4", PD: "Sirius 1" },
     "Aquila 2": { LG: "Maia 2", PG: "Sadatoni 1", LD: "Atlas B 2", PD: "Persei 1" },
     "Aquila 3": { LG: "Auriga 3", PG: "Atlas C 3", LD: "Persei 4", PD: "Cygni 1" },
     "Aquila 4": { LG: "Cygni 3", PG: "Orion 1", LD: "Alcyone 2", PD: "Persei 3" },
 
-    // 15: Orion (OR)
     "Orion 1": { LG: "Orion 4", PG: "Aquila 4", LD: "Maia 2", PD: "Eridani 2" },
     "Orion 2": { LG: "Atlas C 2", PG: "Sadatoni 3", LD: "Atlas A 1", PD: "Atlas B 4" },
     "Orion 3": { LG: "Auriga 3", PG: "Atlas C 3", LD: "Atlas A 3", PD: "Cygni 4" },
     "Orion 4": { LG: "Aquila 1", PG: "Helvetios 1", LD: "Helvetios 3", PD: "Orion 1" },
 
-    // 16: Maia (MA)
     "Maia 1": { LG: "Eridani 1", PG: "Atlas A 3", LD: "Bootes 4", PD: "Auriga 4" },
     "Maia 2": { LG: "Orion 1", PG: "Aquila 2", LD: "Atlas B 1", PD: "Maia 4" },
     "Maia 3": { LG: "Atlas A 4", PG: "Sadatoni 2", LD: "Atlas A 4", PD: "Eridani 2" },
     "Maia 4": { LG: "Auriga 1", PG: "Maia 2", LD: "Persei 3", PD: "Auriga 2" }
 };
 
-const positionNames = {
-    "LG": "Lewy Górny portal",
-    "PG": "Prawy Górny portal",
-    "LD": "Lewy Dolny portal",
-    "PD": "Prawy Dolny portal"
-};
+// ==================== STAN APLIKACJI ====================
+let currentLanguage = 'pl';
 
+// ==================== FUNKCJE JĘZYKOWE ====================
+function changeLanguage(lang) {
+    currentLanguage = lang;
+    updateLanguageSelect();
+    translatePage();
+}
+
+function updateLanguageSelect() {
+    const select = document.getElementById('languageSelect');
+    select.value = currentLanguage;
+}
+
+function translatePage() {
+    const t = translations[currentLanguage];
+    
+    // Aktualizacja elementów tekstowych
+    document.getElementById('title').textContent = t.title;
+    document.getElementById('currentLocationLabel').textContent = t.currentLocation;
+    document.getElementById('positionMapLabel').textContent = t.positionMap;
+    document.getElementById('destinationLabel').textContent = t.destination;
+    document.getElementById('findPathBtn').textContent = t.findPath;
+    
+    // Aktualizacja atrybutu lang
+    document.documentElement.lang = currentLanguage;
+    
+    // Jeśli wyświetlany jest wynik, zaktualizuj go też
+    const resultDiv = document.getElementById('result');
+    if (resultDiv.innerHTML.includes("KROK") || resultDiv.innerHTML.includes("STEP")) {
+        findPath(); // Przelicz aby zaktualizować tłumaczenia
+    }
+}
+
+// ==================== FUNKCJE WYSZUKIWANIA ŚCIEŻKI ====================
 function setup() {
     const startSelect = document.getElementById('startNode');
     const endSelect = document.getElementById('endNode');
     const nodes = Object.keys(graph).sort();
     
+    // Wyczyść istniejące opcje
+    startSelect.innerHTML = '';
+    endSelect.innerHTML = '';
+    
     nodes.forEach(node => {
-        let label = node.replace('_', ' Kwadrant ');
+        const label = node.replace(/(\d+)$/, ' $1');
         startSelect.add(new Option(label, node));
         endSelect.add(new Option(label, node));
     });
@@ -156,10 +346,12 @@ function findPath() {
     const start = document.getElementById('startNode').value;
     const end = document.getElementById('endNode').value;
     const resultDiv = document.getElementById('result');
+    const t = translations[currentLanguage];
+    
     resultDiv.innerHTML = "";
 
     if (start === end) {
-        resultDiv.innerHTML = "Jesteś już u celu!";
+        resultDiv.innerHTML = `<div style="text-align:center; padding:20px; color:#4caf50;">${t.alreadyThere}</div>`;
         return;
     }
 
@@ -184,12 +376,14 @@ function findPath() {
             }
         }
     }
-    resultDiv.innerHTML = "Brak dostępnej drogi.";
+    resultDiv.innerHTML = `<div style="text-align:center; padding:20px; color:#ff6b6b;">${t.noPath}</div>`;
 }
 
 function displayPath(path) {
     const resultDiv = document.getElementById('result');
-    let html = "<h3>Twoja trasa:</h3>";
+    const t = translations[currentLanguage];
+    
+    let html = `<h3>${t.yourRoute}</h3>`;
 
     for (let i = 0; i < path.length - 1; i++) {
         let current = path[i];
@@ -198,23 +392,52 @@ function displayPath(path) {
         // Znajdź pozycję portalu prowadzącego do 'next'
         let portals = graph[current];
         let positionKey = Object.keys(portals).find(key => portals[key] === next);
-        let direction = positionNames[positionKey];
+        let direction = t.positions[positionKey];
+
+        // Formatuj nazwy lokacji (przywracamy polskie "Strefa")
+        const formatNodeName = (node) => {
+            if (currentLanguage === 'pl') {
+                return node.replace(/(\d+)$/, ' Strefa $1');
+            } else {
+                return node.replace(/(\d+)$/, ' Zone $1');
+            }
+        };
 
         html += `
             <div class="step-card">
-                <strong>KROK ${i+1}:</strong> Jesteś w <b>${current.replace('_', ' Kwadrant ')}</b><br>
-                Wybierz: <span class="portal-instruction">${direction}</span><br>
-                Przeniesie Cię do: <span class="target-name">${next.replace('_', ' Kwadrant ')}</span>
+                <strong>${t.step} ${i+1}:</strong> ${t.youAreAt} <b>${formatNodeName(current)}</b><br>
+                ${t.choose} <span class="portal-instruction">${direction}</span><br>
+                ${t.willTakeYouTo}: <span class="target-name">${formatNodeName(next)}</span>
             </div>
         `;
     }
     
-    html += `<div style="text-align:center; color:#4caf50; font-weight:bold;">Jesteś u celu! 🏁</div>`;
+    html += `<div style="text-align:center; color:#4caf50; font-weight:bold; padding:20px;">${t.arrived}</div>`;
     resultDiv.innerHTML = html;
 }
 
-setup();
+// ==================== INICJALIZACJA ====================
+function init() {
+    // Ustaw język na podstawie preferencji przeglądarki
+    const browserLang = navigator.language.toLowerCase();
+    currentLanguage = (browserLang.startsWith('pl')) ? 'pl' : 'en';
+    
+    // Inicjalizacja
+    setup();
+    updateLanguageSelect();
+    translatePage();
+    
+    // Ustaw początkowe wartości dropdown
+    const nodes = Object.keys(graph).sort();
+    if (nodes.length >= 2) {
+        document.getElementById('startNode').value = nodes[0];
+        document.getElementById('endNode').value = nodes[1];
+    }
+}
+
+// Uruchom inicjalizację po załadowaniu strony
+window.onload = init;
 </script>
 </body>
-
 </html>
+
